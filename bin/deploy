@@ -1,2 +1,10 @@
 #!/usr/bin/env ruby
-puts "Test Deploy!"
+require "deploy"
+puts Dir.pwd 
+
+if File.exist?( '.deploy.yml')
+  puts "Process Config"
+else
+  
+  puts "Created Config"
+end

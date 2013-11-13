@@ -1,6 +1,6 @@
 # Aws::S3::Deploy
 
-TODO: Write a gem description
+A Summary of the AWS Deploy Gem
 
 ## Installation
 

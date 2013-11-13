@@ -1,7 +1,7 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'aws/s3/deploy/version'
+require 'deploy/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "aws-s3-deploy"
@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Bill Centinaro"]
   spec.email         = ["bill@theresnobox.net"]
   spec.description   = %q{Deploy static files to AWS S3.}
-  spec.summary       = %q{TODO: Deploys static assets to AWS S3.}
+  spec.summary       = %q{Deploys static assets to AWS S3.}
   spec.homepage      = ""
   spec.license       = "MIT"
 
