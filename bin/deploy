@@ -2,9 +2,23 @@
 require "deploy"
 puts Dir.pwd 
 
-if File.exist?( '.deploy.yml')
-  puts "Process Config"
+if File.exist?( '.deploy')
+  puts Deploy.load_config.to_yaml
+  Deploy.sync
 else
+  config = {}
+  puts "No Config file for this folder found... let's create one"
+  puts "Your Amazon AWS Key:"
+  config['aws_key'] = gets.strip 
   
-  puts "Created Config"
+  puts "Your Amazon AWS Secret:"
+  config['aws_secret'] = gets.strip 
+
+  puts "The Bucket you'd like to deploy to:"
+  config['aws_bucket'] = gets.strip 
+  
+  puts "The Folder You'd like to deploy from:"
+  config['deploy_folder'] = gets.strip
+  Deploy.create_config(config)
+  
 end
