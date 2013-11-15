@@ -51,7 +51,7 @@ module Deploy
           else
             remote.write(file: file,  content_type: content_type)
           end
-          remote.acl
+          remote.acl = :public_read 
       end
     end
   end
