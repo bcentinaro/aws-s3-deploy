@@ -8,6 +8,8 @@ if File.exist?( '.deploy')
 else
   config = {}
   puts "No Config file for this folder found... let's create one"
+  
+  # We need to accept empty string, as wel for KEY and SECRET
   puts "Your Amazon AWS Key:"
   config['aws_key'] = gets.strip 
   

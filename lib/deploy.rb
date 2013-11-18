@@ -6,6 +6,9 @@ require 'yaml'
 module Deploy
   
   def self.load_config
+    
+    # We need to account for AWS Keys stored in 
+    # ENV Variables here.
     defaults = {'aws_region' => 'us-west-2'}
     @config = YAML.load_file("#{Dir.pwd}/.deploy")
     @config = defaults.merge(@config)
