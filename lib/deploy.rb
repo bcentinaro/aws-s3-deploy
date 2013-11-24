@@ -21,6 +21,8 @@ module Deploy
       'aws_bucket' => nil, 
       'deploy_folder' =>  nil
     }.merge(config)
+    config['aws_key'] = ENV['AWS_KEY'] if config['aws_key'].empty?
+    config['aws_secret'] = ENV['AWS_SECRET'] if config['aws_secret'].empty?
     File.open("#{Dir.pwd}/.deploy", 'w+') { |file| file.write(config.to_yaml) }
   end
   

@@ -10,10 +10,10 @@ else
   puts "No Config file for this folder found... let's create one"
   
   # We need to accept empty string, as wel for KEY and SECRET
-  puts "Your Amazon AWS Key:"
+  puts "Your Amazon AWS Key(Leave Empty to use AWS_KEY enviornment variable):"
   config['aws_key'] = gets.strip 
   
-  puts "Your Amazon AWS Secret:"
+  puts "Your Amazon AWS Secret (Leave Empty to use AWS_SECRET enviornment variable):"
   config['aws_secret'] = gets.strip 
 
   puts "The Bucket you'd like to deploy to:"
