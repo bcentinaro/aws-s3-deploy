@@ -1,4 +1,5 @@
 require "deploy/version"
+require 'closure-compiler'
 require 'aws-sdk'
 require 'yaml'
 
@@ -9,7 +10,7 @@ module Deploy
     
     # We need to account for AWS Keys stored in 
     # ENV Variables here.
-    defaults = {'aws_region' => 'us-west-2'}
+    defaults = {'aws_region' => 'us-west-2', 'compress' => true}
     @config = YAML.load_file("#{Dir.pwd}/.deploy")
     @config = defaults.merge(@config)
   end
@@ -19,7 +20,8 @@ module Deploy
       'aws_key' =>  nil,
       'aws_secret' =>  nil, 
       'aws_bucket' => nil, 
-      'deploy_folder' =>  nil
+      'deploy_folder' =>  nil,
+      'compress' => true
     }.merge(config)
     config['aws_key'] = ENV['AWS_KEY'] if config['aws_key'].empty?
     config['aws_secret'] = ENV['AWS_SECRET'] if config['aws_secret'].empty?
@@ -38,26 +40,61 @@ module Deploy
 
       if File.file?(file)
         remote_file = file.sub("#{@config['deploy_folder']}/", "")
-          puts "+ #{file}"
+          
           remote = bucket.objects[remote_file]
           
           content_type = case file.split('.').last
           when 'css'
+            Deploy::Compress.compress(file)
             'text/css'
           when 'js'
-             'application/javascript'
+            Deploy::Compress.compile(file)
+            'application/javascript'
           when 'otf'
             'font/opentype'
           when 'svg'
             'image/svg+xml'
+          when 'xml'
+            'text/xml'
+          when 'html', 'htm'
+            'text/html'
+          when 'gz'
+            'skip'
           end 
-          if File.exist?("#{file}.gz")
-            remote.write(file: "#{file}.gz", content_encoding: 'gzip',  content_type: content_type)
-          else
-            remote.write(file: file,  content_type: content_type)
+          
+          unless content_type == 'skip'
+            if File.exist?("#{file}.gz")
+              puts "+ #{file} (compressed)"
+              remote.write(file: "#{file}.gz", content_encoding: 'gzip',  content_type: content_type)
+            else
+              puts "+ #{file}"
+              remote.write(file: file,  content_type: content_type)
+            end
+            remote.acl = :public_read 
           end
-          remote.acl = :public_read 
       end
     end
+  end
+end
+
+
+module Deploy::Compress
+  def self.compress(file)
+    content = File.read(file).encode!('UTF-8', 'UTF-8', :invalid => :replace) 
+    gzip(content, file)
+  end
+  
+  def self.compile(file)
+    content = File.read(file).encode!('UTF-8', 'UTF-8', :invalid => :replace) 
+    content = closure(content, file)
+    gzip(content, file)
+  end
+  
+  def self.gzip(content, file)
+    Zlib::GzipWriter.open("#{file}.gz") {|f| f.write(content) }
+  end
+  
+  def self.closure(content, file)
+    Closure::Compiler.new.compile(content)
   end
 end
