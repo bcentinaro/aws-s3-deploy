@@ -62,11 +62,11 @@ module Deploy
             if File.exist?("#{file}.gz")
               puts "+ #{file} (compressed)"
               s3.put_object(bucket: @config['aws_bucket'], key: remote_file, body: File.read("#{file}.gz"),
-                                 content_type: content_type, content_encoding: 'gzip')
+                                 content_type: content_type, content_encoding: 'gzip', acl: 'public-read')
             else
               puts "+ #{file}"
               s3.put_object(bucket: @config['aws_bucket'], key: remote_file, body: File.read(file),
-                                 content_type: content_type)
+                                 content_type: content_type, acl: 'public-read')
             end
 
           end
