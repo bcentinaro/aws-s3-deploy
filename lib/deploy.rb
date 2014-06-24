@@ -1,6 +1,6 @@
 require "deploy/version"
 require 'closure-compiler'
-require 'aws-sdk'
+require 'aws-sdk-core'
 require 'yaml'
 
 
@@ -25,23 +25,19 @@ module Deploy
     }.merge(config)
     config['aws_key'] = ENV['AWS_KEY'] if config['aws_key'].empty?
     config['aws_secret'] = ENV['AWS_SECRET'] if config['aws_secret'].empty?
+    config['aws_region'] = ENV['AWS_REGION'] if config['aws_region'].empty?
     File.open("#{Dir.pwd}/.deploy", 'w+') { |file| file.write(config.to_yaml) }
   end
   
-  def self.get_bucket
-    ::AWS.config(access_key_id: @config['aws_key'], secret_access_key: @config['aws_secret'], region: @config['aws_region'])
-    service = ::AWS::S3.new(s3_endpoint: "s3-#{@config['aws_region']}.amazonaws.com")
-    service.buckets[@config['aws_bucket']]
-  end
-  
   def self.sync
-    bucket = get_bucket
+    Aws.config[:region] = @config['aws_region']
+    Aws.config[:credentials] = Aws::Credentials.new(@config['aws_key'], @config['aws_secret'])
+    s3 = Aws.s3
+    
     Dir.glob("#{@config['deploy_folder']}/**/*").each do |file|
 
       if File.file?(file)
         remote_file = file.sub("#{@config['deploy_folder']}/", "")
-          
-          remote = bucket.objects[remote_file]
           
           content_type = case file.split('.').last
           when 'css'
@@ -65,12 +61,14 @@ module Deploy
           unless content_type == 'skip'
             if File.exist?("#{file}.gz")
               puts "+ #{file} (compressed)"
-              remote.write(file: "#{file}.gz", content_encoding: 'gzip',  content_type: content_type)
+              s3.put_object(bucket: @config['aws_bucket'], key: remote_file, body: File.read("#{file}.gz"),
+                                 content_type: content_type, content_encoding: 'gzip')
             else
               puts "+ #{file}"
-              remote.write(file: file,  content_type: content_type)
+              s3.put_object(bucket: @config['aws_bucket'], key: remote_file, body: File.read(file),
+                                 content_type: content_type)
             end
-            remote.acl = :public_read 
+
           end
       end
     end

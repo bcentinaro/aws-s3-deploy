@@ -19,6 +19,9 @@ else
   puts "The Bucket you'd like to deploy to:"
   config['aws_bucket'] = gets.strip 
   
+  puts "The Region you'd like to deploy to:"
+  config['aws_region'] = gets.strip 
+  
   puts "The Folder You'd like to deploy from:"
   config['deploy_folder'] = gets.strip
   Deploy.create_config(config)
